@@ -6,7 +6,11 @@ import sklearn.datasets
 import matplotlib.pyplot as plt
 
 
+<<<<<<< HEAD
 #this is a comment
+=======
+#test
+>>>>>>> b3bf124ff436179c63190b50332eb0c8bc3475ac
 def load_data():
     N=500
     gq = sklearn.datasets.make_gaussian_quantiles(mean=None, cov = 0.7, n_samples=N, n_features=2, n_classes=2, shuffle=True, random_state=None)
