@@ -33,21 +33,40 @@ def sigmoid(x):
         sigmoid[i] = 1/(1+ np.exp(-x[i]))
     return sigmoid
 
+def sigmoidderivative(z):
+    deriv = np.zeros(z.size)
+    for i in range(0, z.size):
+        deriv[i] = 1/(1+ np.exp(-z[i])) * (1-1/(1+ np.exp(-z[i])))
+    return deriv
+
 
 def initialize_weights(N, M):
     w = np.random.uniform(low = -1, high = 1, size = (N,M))
     return w
 
 def forward_pass(w1, w2, x):
-    y = np.dot(w1, x)
-    y = sigmoid(y)
-    y = np.dot(w2, y)
-    y = sigmoid(y)
+    u1 = np.dot(w1, x)
+    h1 = sigmoid(u1)
+    u2 = np.dot(w2, h1)
+    y = sigmoid(u2)
     return y
 
-def backward_pass(w, x):
-    return
+def backward_pass(w1, w2, x):
+    #we want to get dy/dW
+    # dy/dw1 = dsigmoid(u2)/du2 * dW2h1/dh1 * dsigmoid(u1)/du1 * dW1'x/dW1
+    # dy/dw2 = dy/du2 * du2/dW2 = dsigmoid(u2)/du2 * (d(W2h1)/dh1 = W2?)
+    u1 = np.dot(w1, x)
+    h1 = sigmoid(u1)
+    u2 = np.dot(w2, h1)
+    print(w2.size, w2.shape)
+    dw1 = sigmoidderivative(u2) * w2.transpose() * sigmoidderivative(u1) * w1.transpose()
+    dw2 = sigmoidderivative(u2) * w2.transpose()
+    return dw1, dw2
     
+def update_weights(w1, w2, dw1, dw2, y, ytrue):
+    w1 = w1 - (y-ytrue) * dw1
+    w2 = w2 - (y-ytrue) * dw2
+    return w1, w2
 
 
 #C:\Users\wopke\OneDrive\Documents\RUG\DeepLearning
@@ -65,12 +84,16 @@ def main():
     #initialize first layer
     w1 = initialize_weights(N_weights, layer_size)
     w2 = initialize_weights(1, N_weights)
-    print(forward_pass(w1, w2, data[0]))
+    #print(forward_pass(w1, w2, data[0]))
 
     y_out = forward_pass(w1, w2, data[1])
+    dw1, dw2 = backward_pass(w1, w2, data[1])
+    w1, w2 = update_weights(w1, w2, dw1, dw2, y_out, y_true)
 
-    make_graphs(data, y_true)
-    print("data:", data)
+    print(w1, w2)
+
+    #make_graphs(data, y_true)
+    #print("data:", data)
     
     
 
