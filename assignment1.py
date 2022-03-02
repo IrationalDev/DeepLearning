@@ -6,11 +6,7 @@ import sklearn.datasets
 import matplotlib.pyplot as plt
 
 
-<<<<<<< HEAD
 #this is a comment
-=======
-#test
->>>>>>> b3bf124ff436179c63190b50332eb0c8bc3475ac
 def load_data():
     N=500
     gq = sklearn.datasets.make_gaussian_quantiles(mean=None, cov = 0.7, n_samples=N, n_features=2, n_classes=2, shuffle=True, random_state=None)
@@ -55,25 +51,26 @@ def forward_pass(w1, w2, x):
     y = sigmoid(u2)
     return y
 
-def backward_pass(w1, w2, x):
+def backward_pass(w1, w2, x, ypred, ytrue):
     #we want to get dy/dW
     # dy/dw1 = dsigmoid(u2)/du2 * dW2h1/dh1 * dsigmoid(u1)/du1 * dW1'x/dW1
     # dy/dw2 = dy/du2 * du2/dW2 = dsigmoid(u2)/du2 * (d(W2h1)/dh1 = W2?)
     u1 = np.dot(w1, x)
     h1 = sigmoid(u1)
     u2 = np.dot(w2, h1)
-    print(w2.size, w2.shape)
-    dw1 = sigmoidderivative(u2) * w2.transpose() * sigmoidderivative(u1) * w1.transpose()
-    dw2 = sigmoidderivative(u2) * w2.transpose()
+    dw2 = sigmoidderivative(u2) * w1
+    dw1 = sigmoidderivative(u1) * x * dw2
+    print(dw2.size)
     return dw1, dw2
+
+
     
 def update_weights(w1, w2, dw1, dw2, y, ytrue):
-    w1 = w1 - (y-ytrue) * dw1
-    w2 = w2 - (y-ytrue) * dw2
+    lambda = 0.8
+    w1 = w1 - (lambda * (y-ytrue) * dw1)
+    w2 = w2 - (lambda * (y-ytrue) * dw2)
     return w1, w2
 
-
-#C:\Users\wopke\OneDrive\Documents\RUG\DeepLearning
 
 #use minibatching
 
