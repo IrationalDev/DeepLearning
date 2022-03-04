@@ -142,7 +142,7 @@ def sigmoidderivative(vector):
     return sigderiv
 
 
-def keras_learning(data, input_size, output_size, hidden_layers, batch_size, Epochs):
+def keras_learning(data, input_size, output_size, hidden_layers, Batch_Size, Epochs):
     optimizer = SGD(learning_rate=0.8)
     model = Sequential()
     model.add(Dense(input_size[0], activation='sigmoid'))
@@ -152,12 +152,13 @@ def keras_learning(data, input_size, output_size, hidden_layers, batch_size, Epo
 
     model.compile(loss='mse', optimizer=optimizer, metrics=['accuracy'])
 
-    history = model.fit(data[0], data[1], batch_size = batch_size, epochs = Epochs, verbose=0)
+
+    history = model.fit(data[0], data[1], batch_size = Batch_Size, epochs = Epochs, verbose=0)
     plt.plot(history.history['loss'])
     plt.title('Model loss')
     plt.ylabel('Mean Squared Error')
     plt.xlabel('Epoch')
-    plt.savefig(f'../DeepLearning/{keras_loss}.jpg')
+    plt.savefig('../DeepLearning/{keras_loss}.jpg')
     plt.show()
 
     plt.plot(history.history['accuracy'])
@@ -171,13 +172,11 @@ def keras_learning(data, input_size, output_size, hidden_layers, batch_size, Epo
 def main():
     #Call functions here
     #random.seed(8)
-    gq = load_data()
-    data = gq[0]
-    y_true = gq[1]
+    data = load_data()
     input_size = [2]
     output_size = [1]
     hidden_layers = [6]
-    NN = Neural_Network(gq, input_size, output_size, hidden_layers)
+    NN = Neural_Network(data, input_size, output_size, hidden_layers)
     Batch_Size = 500
     Iteration_Epochs = 10
     NN.train_network(Batch_Size, Iteration_Epochs)
