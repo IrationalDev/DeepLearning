@@ -68,6 +68,22 @@ class Neural_Network:
             self.Bias[i] = self.Bias[i] - (reg_const/batch_size) * total_change_bias[i]
             #print(" Weights after:", self.Weights[i])
 
+    def test_network(self, data):
+        data_size = len(data[0])
+        total_sse = 0.0
+        total_correct_predictions = 0
+        for i in range(data_size):
+            x = data[0][i]
+            y = data[1][i]
+            U, H = Neural_Network.forward_pass(self, x)
+            total_sse = total_sse + np.square(H[-1] - y)
+            total_correct_predictions = total_correct_predictions + (np.round(H[-1])==y)
+            print("Mean squared error = {} \n Accuracy = {}".format(total_sse/data_size, (total_correct_predictions*100)/data_size))
+
+
+
+
+
 
 
         
