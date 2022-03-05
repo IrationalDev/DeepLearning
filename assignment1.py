@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.optimizers import SGD
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 
@@ -78,7 +79,7 @@ class Neural_Network:
             U, H = Neural_Network.forward_pass(self, x)
             total_sse = total_sse + np.square(H[-1] - y)
             total_correct_predictions = total_correct_predictions + (np.round(H[-1])==y)
-            print("Mean squared error = {} \n Accuracy = {}".format(total_sse/data_size, (total_correct_predictions*100)/data_size))
+        print("\n TEST Mean squared error = {} \n TEST Accuracy = {}\n".format(total_sse/data_size, (total_correct_predictions*100)/data_size))
 
 
 
@@ -185,18 +186,41 @@ def keras_learning(data, input_size, output_size, hidden_layers, Batch_Size, Epo
     plt.show()
     return history
 
+def split_data(data, factor):
+    x = data[0]
+    y = data[1]
+
+    xtrain, xtest, ytrain, ytest = sklearn.model_selection.train_test_split(x, y, train_size = 0.8, shuffle=True)
+    data_train = [np.zeros(z.shape) for z in [xtrain, ytrain]]
+    data_test = [np.zeros(z.shape) for z in [xtest, ytest]]
+    data_train[0] = xtrain
+    data_train[1] = ytrain
+    data_test[0] = xtest
+    data_test[1] = ytest
+    return  data_train, data_test
+
 def main():
     #Call functions here
     #random.seed(8)
+
+
     data = load_data()
+    #x_train, x_test, y_train, y_test = split_data(data, 0.8)
+    #data_train = x_train + y_train
+    #data_test = x_test + y_test
+    data_train, data_test = split_data(data, 0.8)
+    print("hello\n", len(data_train[0]), len(data_test[0]))
     input_size = [2]
     output_size = [1]
     hidden_layers = [6]
-    NN = Neural_Network(data, input_size, output_size, hidden_layers)
-    Batch_Size = 500
-    Iteration_Epochs = 10
+    NN = Neural_Network(data_train, input_size, output_size, hidden_layers)
+    Batch_Size = len(data_train[0])
+    Iteration_Epochs = 3000
     NN.train_network(Batch_Size, Iteration_Epochs)
-    keras_learning(data, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs)
+
+    
+    #keras_learning(data, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs)
+    NN.test_network(data_test)
 
     
     
