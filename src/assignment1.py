@@ -11,6 +11,8 @@ from tensorflow.keras.optimizers import SGD
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import random
+import time
+import tensorflow as tf
 
 
 class Neural_Network:
@@ -21,12 +23,12 @@ class Neural_Network:
         #initialize Biases
         self.Bias = []
         for i in range (len(self.layers)-1):
-            self.Bias.append((np.random.random(self.layers[i+1])*2)-1)
+            self.Bias.append(np.full((self.layers[i+1]), 0.5))
         # self.Bias = np.array(self.Bias)
         #initialize Weights
         self.Weights = []
         for i in range (len(self.layers)-1):
-            self.Weights.append((np.random.random((self.layers[i], self.layers[i+1]))*2)-1)
+            self.Weights.append(np.full((self.layers[i], self.layers[i+1]), 0.5))
         # print('weight array',self.Weights)
         # print(self.Weights[1])
         # print('bias array', self.Bias)
@@ -148,7 +150,7 @@ def plot_data(loss, accuracy, kerasloss, kerasaccuracy):
     plt.ylabel('Mean Squared Error')
     plt.xlabel('Epoch')
     plt.ylim([0, 0.5])
-    plt.savefig('../DeepLearning/ourNN_loss.jpg')
+    plt.savefig('../ourNN_loss.jpg')
     plt.clf()
 
     plt.plot(accuracy)
@@ -156,7 +158,7 @@ def plot_data(loss, accuracy, kerasloss, kerasaccuracy):
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
     plt.ylim([0, 1])
-    plt.savefig(f'../DeepLearning/ourNN_accuracy.jpg')
+    plt.savefig(f'../ourNN_accuracy.jpg')
     plt.clf()
 
     plt.plot(kerasloss)
@@ -164,7 +166,7 @@ def plot_data(loss, accuracy, kerasloss, kerasaccuracy):
     plt.ylabel('Mean Squared Error')
     plt.xlabel('Epoch')
     plt.ylim([0, 0.5])
-    plt.savefig('../DeepLearning/keras_loss.jpg')
+    plt.savefig('../keras_loss.jpg')
     plt.clf()
 
     plt.plot(kerasaccuracy)
@@ -172,7 +174,7 @@ def plot_data(loss, accuracy, kerasloss, kerasaccuracy):
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
     plt.ylim([0, 1])
-    plt.savefig(f'../DeepLearning/keras_accuracy.jpg')
+    plt.savefig(f'../keras_accuracy.jpg')
     plt.clf()
 
 def load_data():
@@ -208,13 +210,13 @@ def sigmoidderivative(vector):
     return sigderiv
 
 
-def keras_learning(data, input_size, output_size, hidden_layers, Batch_Size, Epochs):
+def keras_learning(data, input_size, output_size, hidden_layers, Batch_Size, Epochs, optimizer):
     optimizer = SGD(learning_rate=0.8, momentum=0)
     model = Sequential()
-    model.add(Dense(input_size[0], activation='sigmoid'))
+    model.add(Dense(input_size[0], activation='sigmoid', kernel_initializer=tf.keras.initializers.Constant(0.5)))
     for i in range(len(hidden_layers)):
-        model.add(Dense(hidden_layers[i], activation='sigmoid'))
-    model.add(Dense(output_size[0], activation='sigmoid'))
+        model.add(Dense(hidden_layers[i], activation='sigmoid', kernel_initializer=tf.keras.initializers.Constant(0.5)))
+    model.add(Dense(output_size[0], activation='sigmoid', kernel_initializer=tf.keras.initializers.Constant(0.5)))
 
     model.compile(loss='mse', optimizer=optimizer, metrics=['accuracy'])
 
@@ -246,7 +248,7 @@ def main():
     ###Adapt the layers to change the shape of the neural network###
     input_size = [2]
     output_size = [1]
-    hidden_layers = [6, 6]
+    hidden_layers = [6]
     Iteration_Epochs = 3000
 
     ##10fold krossvalidation###
@@ -258,14 +260,21 @@ def main():
     runs = 10
     overall_NN_test_acc = []
     overall_keras_test_acc = []
+    overall_NN_time = []
+    overall_keras_time = []
+
     for i in range(runs):
         print("currently in run", i)
         data_train, data_test = split_data(data, 0.8)
         Batch_Size = len(data_train[0])
 
+        start_time = time.time()
         NN = Neural_Network(data_train, input_size, output_size, hidden_layers)
         loss2, accuracy2 = NN.train_network(Batch_Size, Iteration_Epochs)
-        history, model = keras_learning(data, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs)
+        NNtime = time.time() - start_time
+        start_time = time.time()
+        history, model = keras_learning(data_train, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs, optimizer = SGD(learning_rate=0.8, momentum=0))
+        kerastime = time.time() - start_time
         kerasloss2 = history.history['loss']
         kerasaccuracy2 = history.history['accuracy']
         loss = [a + b for a, b in zip(loss, loss2)]
@@ -273,13 +282,18 @@ def main():
         kerasloss = [a + b for a, b in zip(kerasloss, kerasloss2)]
         kerasaccuracy = [a + b for a, b in zip(kerasaccuracy, kerasaccuracy2)]
 
-        testhistory = model.evaluate(data_test[0], data_test[1])
+        testhistory = model.evaluate(data_test[0], data_test[1], verbose = 0)
         overall_NN_test_acc.append(testhistory[1])
         testaccuracy = NN.classify(data_test[0], data_test[1])
         overall_keras_test_acc.append(testaccuracy)
 
+        overall_NN_time.append(NNtime)
+        overall_keras_time.append(kerastime)
+
     print("keras", np.std(overall_keras_test_acc), np.mean(overall_keras_test_acc))
     print("NN", np.std(overall_NN_test_acc), np.mean(overall_NN_test_acc))
+    print("kerastime", np.std(overall_keras_time), np.mean(overall_keras_time))
+    print("NNtime", np.std(overall_NN_time), np.mean(overall_NN_time))
     
     loss = [a / runs for a in loss]
     accuracy = [a / runs for a in accuracy]
@@ -290,10 +304,21 @@ def main():
 
 
 
+    ##Gridsearch###
+    # data_train, data_test = split_data(data, 0.8)
+    # Batch_Size = len(data_train[0])
 
-
-
-
+    # input_size = [2]
+    # output_size = [1]
+    # Iteration_Epochs = 3000
+    # hidden_layerss = [[4],[6],[10],[4,4],[6,6]]
+    # SGDs = [SGD(learning_rate=0.3, momentum=0), SGD(learning_rate=0.5, momentum=0), SGD(learning_rate=0.8, momentum=0)]
+    # for hidden_layers in hidden_layerss:
+    #     for optimizer in SGDs:
+    #         history, model = keras_learning(data_train, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs, optimizer = optimizer)
+    #         testhistory = model.evaluate(data_test[0], data_test[1], verbose = 0)
+    #         print("\n")
+    #         print(hidden_layers, optimizer.learning_rate, testhistory)
 
 
     

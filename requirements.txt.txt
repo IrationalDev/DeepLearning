@@ -11,3 +11,5 @@ from tensorflow.keras.optimizers import SGD
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import random
+import time
+import tensorflow as tf
