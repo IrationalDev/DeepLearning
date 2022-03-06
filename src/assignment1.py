@@ -23,12 +23,12 @@ class Neural_Network:
         #initialize Biases
         self.Bias = []
         for i in range (len(self.layers)-1):
-            self.Bias.append(np.full((self.layers[i+1]), 0.5))
+            self.Bias.append(np.zeros(self.layers[i+1]))
         # self.Bias = np.array(self.Bias)
         #initialize Weights
         self.Weights = []
         for i in range (len(self.layers)-1):
-            self.Weights.append(np.full((self.layers[i], self.layers[i+1]), 0.5))
+            self.Weights.append((np.random.random(self.layers[i+1])*2)-1)
         # print('weight array',self.Weights)
         # print(self.Weights[1])
         # print('bias array', self.Bias)
