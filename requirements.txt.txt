@@ -1,0 +1,13 @@
+from ctypes import sizeof
+from mimetypes import init
+from socket import getfqdn
+from ssl import HAS_NEVER_CHECK_COMMON_NAME
+import numpy as np
+import sklearn.datasets
+import matplotlib.pyplot as plt
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.optimizers import SGD
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+import random
