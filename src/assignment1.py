@@ -193,6 +193,24 @@ def plot_data(loss, accuracy, kerasloss, kerasaccuracy):
     plt.savefig(f'../keras_accuracy.jpg')
     plt.clf()
 
+    plt.plot(kerasloss, 'b')
+    plt.plot(loss, 'g')
+    plt.title('Model loss')
+    plt.ylabel('Mean Squared Error')
+    plt.xlabel('Epoch')
+    plt.ylim([0, 0.5])
+    plt.savefig('../both_loss.jpg')
+    plt.clf()
+    
+    plt.plot(kerasaccuracy, 'b')
+    plt.plot(accuracy, 'g')
+    plt.title('Model accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.ylim([0, 1])
+    plt.savefig(f'../both_accuracy.jpg')
+    plt.clf()
+
 def load_data():
     N=500
     gq = sklearn.datasets.make_gaussian_quantiles(mean=None, cov = 0.7, n_samples=N, n_features=2, n_classes=2, shuffle=True, random_state=None)
@@ -264,10 +282,10 @@ def main():
     ###Adapt the layers to change the shape of the neural network###
     input_size = [2]
     output_size = [1]
-    hidden_layers = [6]
+    hidden_layers = [6, 6]
     Iteration_Epochs = 20
 
-    ##10fold krossvalidation###
+    ##10 times model run with crossvalidation###
     loss = np.zeros(Iteration_Epochs)
     accuracy = np.zeros(Iteration_Epochs)
     kerasloss = np.zeros(Iteration_Epochs)
@@ -311,30 +329,30 @@ def main():
     print("kerastime", np.std(overall_keras_time), np.mean(overall_keras_time))
     print("NNtime", np.std(overall_NN_time), np.mean(overall_NN_time))
     
-    # loss = [a / runs for a in loss]
-    # accuracy = [a / runs for a in accuracy]
-    # kerasloss = [a / runs for a in kerasloss]
-    # kerasaccuracy = [a / runs for a in kerasaccuracy]
+    loss = [a / runs for a in loss]
+    accuracy = [a / runs for a in accuracy]
+    kerasloss = [a / runs for a in kerasloss]
+    kerasaccuracy = [a / runs for a in kerasaccuracy]
 
-    # plot_data(loss, accuracy, kerasloss, kerasaccuracy)
+    plot_data(loss, accuracy, kerasloss, kerasaccuracy)
 
 
 
     ##Gridsearch###
-    data_train, data_test = split_data(data, 0.8)
-    Batch_Size = len(data_train[0])
+    # data_train, data_test = split_data(data, 0.8)
+    # Batch_Size = len(data_train[0])
 
-    input_size = [2]
-    output_size = [1]
-    Iteration_Epochs = 3000
+    # input_size = [2]
+    # output_size = [1]
+    # Iteration_Epochs = 3000
 
-    hidden_layerss = [[6],[10],[4,4],[6,6], [3,3,3]]
-    SGDs = [SGD(learning_rate=0.8, momentum=0), SGD(learning_rate=0.9, momentum=0), SGD(learning_rate=1, momentum=0), SGD(learning_rate=2, momentum=0)]
-    for hidden_layers in hidden_layerss:
-        for optimizer in SGDs:
-            history, model = keras_learning(data_train, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs, optimizer = optimizer)
-            testhistory = model.evaluate(data_test[0], data_test[1], verbose = 0)
-            print(hidden_layers, optimizer.learning_rate, testhistory)
+    # hidden_layerss = [[6],[10],[4,4],[6,6], [3,3,3]]
+    # SGDs = [SGD(learning_rate=0.8, momentum=0.2), SGD(learning_rate=0.9, momentum=0.2), SGD(learning_rate=1, momentum=0.2), SGD(learning_rate=2, momentum=0.2)]
+    # for hidden_layers in hidden_layerss:
+    #     for optimizer in SGDs:
+    #         history, model = keras_learning(data_train, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs, optimizer = optimizer)
+    #         testhistory = model.evaluate(data_test[0], data_test[1], verbose = 0)
+    #         print(hidden_layers, optimizer.learning_rate, testhistory)
 
 
     
