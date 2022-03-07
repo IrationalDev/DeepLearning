@@ -20,7 +20,7 @@ class Neural_Network:
         self.data = data
         self.layers = input_size + hidden_layers + output_size
         self.amount_layers = len(self.layers)
-        #initialize Biases and Weights
+        ###initialize Biases and Weights
         self.Bias = []
         for i in range (len(self.layers)-1):
             self.Bias.append(np.zeros(self.layers[i+1]))
@@ -69,11 +69,13 @@ class Neural_Network:
                 self.Bias[i] = self.Bias[i] - (reg_const/batch_size) * total_change_bias[i] - rho * ((reg_const/batch_size) *old_total_change_bias[i]) 
 
 
-
+    #train_network class manages the training of the network
     def train_network(self, batch_size, iterations, rho):
+        #initialization
         loss = []
         accuracy = []
         reg_const = 0.8
+        #loop over each epoch
         for j in range(iterations):
             total_change_bias = []
             total_change_weights = []
@@ -81,7 +83,9 @@ class Neural_Network:
             total_correct_predictions = 0
             data_size = len(self.data[1])
             
+            #sample_numbers is only important when mini-batching with batch_size, which we eventually don't do
             sample_numbers = np.random.choice(data_size, batch_size, replace = False)
+            #Loop handling backpropagation for each sample
             for i in range(batch_size):
                 x = self.data[0][sample_numbers[i]]
                 y = self.data[1][sample_numbers[i]]
@@ -95,6 +99,7 @@ class Neural_Network:
                     total_change_weights = np.add(total_change_weights, change_weights)
                 total_sse = total_sse + np.square(H[-1] - y)
                 total_correct_predictions = total_correct_predictions + (np.round(H[-1])==y)
+            #note that the SSE/batch size = MSE
             loss.append(total_sse/batch_size)
             accuracy.append((total_correct_predictions)/batch_size)
 
@@ -107,6 +112,7 @@ class Neural_Network:
 
         return loss, accuracy
 
+    ###classify uses the feedforward algorithm to classify the data, returns accuracy
     def classify(self, x, y):
         U = []
         H = []
@@ -246,7 +252,7 @@ def main():
     hidden_layers = [10]
     Iteration_Epochs = 3000
 
-    #10 times model run with crossvalidation###
+    ###10 times model run###
     loss = np.zeros(Iteration_Epochs)
     accuracy = np.zeros(Iteration_Epochs)
     kerasloss = np.zeros(Iteration_Epochs)
@@ -259,10 +265,13 @@ def main():
     overall_keras_time = []
 
     for i in range(runs):
-        print("currently in run", i)
+        ### print("currently in run", i) ###uncomment for some feedback on the progress
+        
+        ###split the data new for every run
         data_train, data_test = split_data(data, 0.8)
         Batch_Size = len(data_train[0])
 
+        ###run the models, collect the computation time and their accuracy and loss for plotting
         start_time = time.time()
         NN = Neural_Network(data_train, input_size, output_size, hidden_layers)
         loss2, accuracy2 = NN.train_network(Batch_Size, Iteration_Epochs, 0.2)
@@ -272,31 +281,33 @@ def main():
         history, model = keras_learning(data_train, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs, optimizer = SGD(learning_rate=0.8, momentum=0.2))
         kerastime = time.time() - start_time
 
+        ###process collected accuracy and loss for plotting to average over the runs
         kerasloss2 = history.history['loss']
         kerasaccuracy2 = history.history['accuracy']
         loss = [a + b for a, b in zip(loss, loss2)]
         accuracy = [a + b for a, b in zip(accuracy, accuracy2)]
         kerasloss = [a + b for a, b in zip(kerasloss, kerasloss2)]
         kerasaccuracy = [a + b for a, b in zip(kerasaccuracy, kerasaccuracy2)]
+        overall_NN_time.append(NNtime)
+        overall_keras_time.append(kerastime)
 
+        ###collect validation results on testing data
         testhistory = model.evaluate(data_test[0], data_test[1], verbose = 0)
         overall_keras_test_acc.append(testhistory[1])
         testaccuracy = NN.classify(data_test[0], data_test[1])
         overall_NN_test_acc.append(testaccuracy)
 
-        overall_NN_time.append(NNtime)
-        overall_keras_time.append(kerastime)
-
+    ###print the validation results
     print("keras", np.std(overall_keras_test_acc), np.mean(overall_keras_test_acc))
     print("NN", np.std(overall_NN_test_acc), np.mean(overall_NN_test_acc))
     print("kerastime", np.std(overall_keras_time), np.mean(overall_keras_time))
     print("NNtime", np.std(overall_NN_time), np.mean(overall_NN_time))
     
+    ###process collected accuracy and loss for plotting to average over the runs
     loss = [a / runs for a in loss]
     accuracy = [a / runs for a in accuracy]
     kerasloss = [a / runs for a in kerasloss]
     kerasaccuracy = [a / runs for a in kerasaccuracy]
-
     plot_data(loss, accuracy, kerasloss, kerasaccuracy)
 
 
