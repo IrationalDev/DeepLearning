@@ -251,74 +251,74 @@ def main():
     hidden_layers = [6]
     Iteration_Epochs = 200
 
-    ##10fold krossvalidation###
-    loss = np.zeros(Iteration_Epochs)
-    accuracy = np.zeros(Iteration_Epochs)
-    kerasloss = np.zeros(Iteration_Epochs)
-    kerasaccuracy = np.zeros(Iteration_Epochs)
+    ##10fold crossvalidation###
+    # loss = np.zeros(Iteration_Epochs)
+    # accuracy = np.zeros(Iteration_Epochs)
+    # kerasloss = np.zeros(Iteration_Epochs)
+    # kerasaccuracy = np.zeros(Iteration_Epochs)
 
-    runs = 10
-    overall_NN_test_acc = []
-    overall_keras_test_acc = []
-    overall_NN_time = []
-    overall_keras_time = []
+    # runs = 10
+    # overall_NN_test_acc = []
+    # overall_keras_test_acc = []
+    # overall_NN_time = []
+    # overall_keras_time = []
 
-    for i in range(runs):
-        print("currently in run", i)
-        data_train, data_test = split_data(data, 0.8)
-        Batch_Size = len(data_train[0])
+    # for i in range(runs):
+    #     print("currently in run", i)
+    #     data_train, data_test = split_data(data, 0.8)
+    #     Batch_Size = len(data_train[0])
 
-        start_time = time.time()
-        NN = Neural_Network(data_train, input_size, output_size, hidden_layers)
-        loss2, accuracy2 = NN.train_network(Batch_Size, Iteration_Epochs)
-        NNtime = time.time() - start_time
-        start_time = time.time()
-        history, model = keras_learning(data_train, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs, optimizer = SGD(learning_rate=0.8, momentum=0))
-        kerastime = time.time() - start_time
-        kerasloss2 = history.history['loss']
-        kerasaccuracy2 = history.history['accuracy']
-        loss = [a + b for a, b in zip(loss, loss2)]
-        accuracy = [a + b for a, b in zip(accuracy, accuracy2)]
-        kerasloss = [a + b for a, b in zip(kerasloss, kerasloss2)]
-        kerasaccuracy = [a + b for a, b in zip(kerasaccuracy, kerasaccuracy2)]
+    #     start_time = time.time()
+    #     NN = Neural_Network(data_train, input_size, output_size, hidden_layers)
+    #     loss2, accuracy2 = NN.train_network(Batch_Size, Iteration_Epochs)
+    #     NNtime = time.time() - start_time
+    #     start_time = time.time()
+    #     history, model = keras_learning(data_train, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs, optimizer = SGD(learning_rate=0.8, momentum=0))
+    #     kerastime = time.time() - start_time
+    #     kerasloss2 = history.history['loss']
+    #     kerasaccuracy2 = history.history['accuracy']
+    #     loss = [a + b for a, b in zip(loss, loss2)]
+    #     accuracy = [a + b for a, b in zip(accuracy, accuracy2)]
+    #     kerasloss = [a + b for a, b in zip(kerasloss, kerasloss2)]
+    #     kerasaccuracy = [a + b for a, b in zip(kerasaccuracy, kerasaccuracy2)]
 
-        testhistory = model.evaluate(data_test[0], data_test[1], verbose = 0)
-        overall_NN_test_acc.append(testhistory[1])
-        testaccuracy = NN.classify(data_test[0], data_test[1])
-        overall_keras_test_acc.append(testaccuracy)
+    #     testhistory = model.evaluate(data_test[0], data_test[1], verbose = 0)
+    #     overall_NN_test_acc.append(testhistory[1])
+    #     testaccuracy = NN.classify(data_test[0], data_test[1])
+    #     overall_keras_test_acc.append(testaccuracy)
 
-        overall_NN_time.append(NNtime)
-        overall_keras_time.append(kerastime)
+    #     overall_NN_time.append(NNtime)
+    #     overall_keras_time.append(kerastime)
 
-    print("keras", np.std(overall_keras_test_acc), np.mean(overall_keras_test_acc))
-    print("NN", np.std(overall_NN_test_acc), np.mean(overall_NN_test_acc))
-    print("kerastime", np.std(overall_keras_time), np.mean(overall_keras_time))
-    print("NNtime", np.std(overall_NN_time), np.mean(overall_NN_time))
+    # print("keras", np.std(overall_keras_test_acc), np.mean(overall_keras_test_acc))
+    # print("NN", np.std(overall_NN_test_acc), np.mean(overall_NN_test_acc))
+    # print("kerastime", np.std(overall_keras_time), np.mean(overall_keras_time))
+    # print("NNtime", np.std(overall_NN_time), np.mean(overall_NN_time))
     
-    loss = [a / runs for a in loss]
-    accuracy = [a / runs for a in accuracy]
-    kerasloss = [a / runs for a in kerasloss]
-    kerasaccuracy = [a / runs for a in kerasaccuracy]
+    # loss = [a / runs for a in loss]
+    # accuracy = [a / runs for a in accuracy]
+    # kerasloss = [a / runs for a in kerasloss]
+    # kerasaccuracy = [a / runs for a in kerasaccuracy]
 
-    plot_data(loss, accuracy, kerasloss, kerasaccuracy)
+    # plot_data(loss, accuracy, kerasloss, kerasaccuracy)
 
 
 
     ##Gridsearch###
-    # data_train, data_test = split_data(data, 0.8)
-    # Batch_Size = len(data_train[0])
+    data_train, data_test = split_data(data, 0.8)
+    Batch_Size = len(data_train[0])
 
-    # input_size = [2]
-    # output_size = [1]
-    # Iteration_Epochs = 3000
-    # hidden_layerss = [[4],[6],[10],[4,4],[6,6]]
-    # SGDs = [SGD(learning_rate=0.3, momentum=0), SGD(learning_rate=0.5, momentum=0), SGD(learning_rate=0.8, momentum=0)]
-    # for hidden_layers in hidden_layerss:
-    #     for optimizer in SGDs:
-    #         history, model = keras_learning(data_train, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs, optimizer = optimizer)
-    #         testhistory = model.evaluate(data_test[0], data_test[1], verbose = 0)
-    #         print("\n")
-    #         print(hidden_layers, optimizer.learning_rate, testhistory)
+    input_size = [2]
+    output_size = [1]
+    Iteration_Epochs = 3000
+
+    hidden_layerss = [[6],[10],[4,4],[6,6], [3,3,3]]
+    SGDs = [SGD(learning_rate=0.8, momentum=0), SGD(learning_rate=0.9, momentum=0), SGD(learning_rate=1, momentum=0), SGD(learning_rate=2, momentum=0)]
+    for hidden_layers in hidden_layerss:
+        for optimizer in SGDs:
+            history, model = keras_learning(data_train, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs, optimizer = optimizer)
+            testhistory = model.evaluate(data_test[0], data_test[1], verbose = 0)
+            print(hidden_layers, optimizer.learning_rate, testhistory)
 
 
     
