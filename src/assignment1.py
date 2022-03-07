@@ -20,18 +20,13 @@ class Neural_Network:
         self.data = data
         self.layers = input_size + hidden_layers + output_size
         self.amount_layers = len(self.layers)
-        #initialize Biases
+        #initialize Biases and Weights
         self.Bias = []
         for i in range (len(self.layers)-1):
             self.Bias.append(np.zeros(self.layers[i+1]))
-        # self.Bias = np.array(self.Bias)
-        #initialize Weights
         self.Weights = []
         for i in range (len(self.layers)-1):
             self.Weights.append((np.random.random((self.layers[i], self.layers[i+1]))*2)-1)
-        # print('weight array',self.Weights)
-        # print(self.Weights[1])
-        # print('bias array', self.Bias)
 
 
     def forward_pass(self, x):
@@ -42,9 +37,7 @@ class Neural_Network:
                 u = np.dot(np.transpose(self.Weights[i]), x) + self.Bias[i]
             else:
                 u = np.dot(np.transpose(self.Weights[i]), h) + self.Bias[i]
-            #print("u", u)
             h = sigmoid(u)
-            #print("h", h)
             U.append(u)
             H.append(h)
         return U, H
@@ -56,53 +49,36 @@ class Neural_Network:
             if i != self.amount_layers -2:
                 layer_error = sigmoidderivative(U[i]) * (np.dot(self.Weights[i+1], layer_error))
             else:
-                #print(U[i] , y , H[i])
                 layer_error = (H[i] - y) * sigmoidderivative(U[i])
             change_Bias[i] = layer_error
             if i==0:
                 change_Weights[i] = np.outer(x, np.transpose(layer_error))
             else:
                 change_Weights[i] = np.outer(H[i-1], np.transpose(layer_error))
-            #print(U[i], H[i])
-                
-        #print("\nlayer error = {}\n, weight change = {} \n bias change = {} \n".format(layer_error, change_Weights, change_Bias))
+
         return change_Bias, change_Weights 
 
-    def gradient_descent(self, total_change_bias, total_change_weights, bias_old, weights_old, batch_size, reg_const, rho):
+    def gradient_descent(self, total_change_bias, total_change_weights, old_total_change_bias, old_total_change_weights, batch_size, reg_const, rho):
         
         for i in range(self.amount_layers - 1):
-            if weights_old == 0:
+            if old_total_change_weights == 0:
                 self.Weights[i] = self.Weights[i] - (reg_const/batch_size) * total_change_weights[i]                
                 self.Bias[i] = self.Bias[i] - (reg_const/batch_size) * total_change_bias[i]
             else:
-                self.Weights[i] = self.Weights[i] - (reg_const/batch_size) * total_change_weights[i] - rho * ((reg_const/batch_size) *weights_old[i])
-                self.Bias[i] = self.Bias[i] - (reg_const/batch_size) * total_change_bias[i] - rho * ((reg_const/batch_size) *bias_old[i]) 
-
-
-    def test_network(self, data):
-        data_size = len(data[0])
-        total_sse = 0.0
-        total_correct_predictions = 0
-        for i in range(data_size):
-            x = data[0][i]
-            y = data[1][i]
-            U, H = Neural_Network.forward_pass(self, x)
-            total_sse = total_sse + np.square(H[-1] - y)
-            total_correct_predictions = total_correct_predictions + (np.round(H[-1])==y)
-        print("\n TEST Mean squared error = {} \n TEST Accuracy = {}\n".format(total_sse/data_size, (total_correct_predictions*100)/data_size))
-
+                self.Weights[i] = self.Weights[i] - (reg_const/batch_size) * total_change_weights[i] - rho * ((reg_const/batch_size) *old_total_change_weights[i])
+                self.Bias[i] = self.Bias[i] - (reg_const/batch_size) * total_change_bias[i] - rho * ((reg_const/batch_size) *old_total_change_bias[i]) 
 
 
 
     def train_network(self, batch_size, iterations, rho):
         loss = []
         accuracy = []
+        reg_const = 0.8
         for j in range(iterations):
             total_change_bias = []
             total_change_weights = []
             total_sse = 0.0
             total_correct_predictions = 0
-            reg_const = 0.8
             data_size = len(self.data[1])
             
             sample_numbers = np.random.choice(data_size, batch_size, replace = False)
@@ -119,24 +95,15 @@ class Neural_Network:
                     total_change_weights = np.add(total_change_weights, change_weights)
                 total_sse = total_sse + np.square(H[-1] - y)
                 total_correct_predictions = total_correct_predictions + (np.round(H[-1])==y)
-                #print(total_change_weights, change_weights)
-            #print("ypred", H[-1])
-            #print(total_correct_predictions)
-            #print("totalchangew, and bias", total_change_weights[2], total_change_bias[2])
             loss.append(total_sse/batch_size)
             accuracy.append((total_correct_predictions)/batch_size)
-            # if j%300 == 0: 
-            #     print("Mean squared error = {} \n Accuracy = {}".format(total_sse/batch_size, (total_correct_predictions*100)/batch_size))
 
-            #Save current weights
-            #weights_old_queue = self.Weights
-            #bias_old_queue = self.Bias
             if(j==0):
                 Neural_Network.gradient_descent(self, total_change_bias, total_change_weights, 0, 0, batch_size, reg_const, rho)
             else:
-                Neural_Network.gradient_descent(self, total_change_bias, total_change_weights, bias_old, weights_old, batch_size, reg_const, rho)
-            weights_old = total_change_weights
-            bias_old = total_change_bias
+                Neural_Network.gradient_descent(self, total_change_bias, total_change_weights, old_total_change_bias, old_total_change_weights, batch_size, reg_const, rho)
+            old_total_change_weights = total_change_weights
+            old_total_change_bias = total_change_bias
 
         return loss, accuracy
 
@@ -150,9 +117,7 @@ class Neural_Network:
                     u = np.dot(np.transpose(self.Weights[i]), x[j]) + self.Bias[i]
                 else:
                     u = np.dot(np.transpose(self.Weights[i]), h) + self.Bias[i]
-                #print("u", u)
                 h = sigmoid(u)
-                #print("h", h)
                 U.append(u)
                 H.append(h)
             if np.round(H[-1])==y[j]:
@@ -218,18 +183,17 @@ def load_data():
     return gq
 
 def make_graphs(data, y_true):
-    # create a figure and axis
     fig, ax = plt.subplots()
 
     colors = {0:'r', 1:'b'}
     for i in range(len(y_true)):
         ax.scatter(data[i][0], data[i][1], color=colors[y_true[i]])
 
-    # set a title and labels
     ax.set_title('Random Dataset')
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     plt.savefig(f'../Data_visualization.jpg')
+    plt.clf()
 
 
 def sigmoid(vector):
@@ -355,9 +319,6 @@ def main():
 
     
 
-
-    
-    
 
 if __name__ == "__main__":
     main()
