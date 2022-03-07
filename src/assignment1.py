@@ -230,7 +230,7 @@ def make_graphs(data, y_true):
     ax.set_title('Random Dataset')
     ax.set_xlabel('x')
     ax.set_ylabel('y')
-    plt.savefig(f'../DeepLearning/Data_visualization.jpg')
+    plt.savefig(f'../Data_visualization.jpg')
 
 
 def sigmoid(vector):
@@ -274,7 +274,6 @@ def split_data(data, factor):
 
 
 def main():
-    random.seed(10)
     #Call functions here
     #random.seed(8)
 
@@ -285,7 +284,7 @@ def main():
     input_size = [2]
     output_size = [1]
     hidden_layers = [6, 6]
-    Iteration_Epochs = 2000
+    Iteration_Epochs = 100
 
     ##10 times model run with crossvalidation###
     loss = np.zeros(Iteration_Epochs)
@@ -293,7 +292,7 @@ def main():
     kerasloss = np.zeros(Iteration_Epochs)
     kerasaccuracy = np.zeros(Iteration_Epochs)
 
-    runs = 10
+    runs = 3
     overall_NN_test_acc = []
     overall_keras_test_acc = []
     overall_NN_time = []
@@ -310,6 +309,7 @@ def main():
         NNtime = time.time() - start_time
         start_time = time.time()
         history, model = keras_learning(data_train, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs, optimizer = SGD(learning_rate=0.8, momentum=0.2))
+        
         kerastime = time.time() - start_time
         kerasloss2 = history.history['loss']
         kerasaccuracy2 = history.history['accuracy']
@@ -357,19 +357,7 @@ def main():
     #         print(hidden_layers, optimizer.learning_rate, testhistory)
 
 
-    
-    #keras_learning(data, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs)
-    #NN.test_network(data_test)
-
-    
-    
-    # print('layers:', NN.layers)
-
-    #initialize first layer
-
-
-    #make_graphs(data[0], data[1])
-    #print("data:", data)
+    make_graphs(data[0], data[1])
     
     
 
