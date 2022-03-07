@@ -60,17 +60,25 @@ class Neural_Network:
                 layer_error = (H[i] - y) * sigmoidderivative(U[i])
             change_Bias[i] = layer_error
             if i==0:
-                change_Weights[i] == np.outer(x, np.transpose(layer_error))
+                change_Weights[i] = np.outer(x, np.transpose(layer_error))
             else:
                 change_Weights[i] = np.outer(H[i-1], np.transpose(layer_error))
+            #print(U[i], H[i])
+                
+        #print("\nlayer error = {}\n, weight change = {} \n bias change = {} \n".format(layer_error, change_Weights, change_Bias))
         return change_Bias, change_Weights 
 
-    def gradient_descent(self, total_change_bias, total_change_weights, batch_size, reg_const):
+    def gradient_descent(self, total_change_bias, total_change_weights, d_bias_old, d_weights_old, batch_size, reg_const, rho):
+        
+
         for i in range(self.amount_layers - 1):
-            #print(" Weights before:", self.Weights[i])
-            self.Weights[i] = self.Weights[i] - (reg_const/batch_size) * total_change_weights[i]
-            self.Bias[i] = self.Bias[i] - (reg_const/batch_size) * total_change_bias[i]
-            #print(" Weights after:", self.Weights[i])
+            if d_weights_old == 0:
+                self.Weights[i] = self.Weights[i] - (reg_const/batch_size) * total_change_weights[i]                
+                self.Bias[i] = self.Bias[i] - (reg_const/batch_size) * total_change_bias[i]
+            else:
+                self.Weights[i] = self.Weights[i] - (reg_const/batch_size) * total_change_weights[i] + rho * (total_change_weights[i] - d_weights_old[i])
+                self.Bias[i] = self.Bias[i] - (reg_const/batch_size) * total_change_bias[i] + rho * (total_change_bias[i] - d_bias_old[i])
+
 
     def test_network(self, data):
         data_size = len(data[0])
@@ -87,7 +95,7 @@ class Neural_Network:
 
 
 
-    def train_network(self, batch_size, iterations):
+    def train_network(self, batch_size, iterations, rho):
         loss = []
         accuracy = []
         for j in range(iterations):
@@ -97,7 +105,7 @@ class Neural_Network:
             total_correct_predictions = 0
             reg_const = 0.8
             data_size = len(self.data[1])
-            #print("data size", data_size)
+            
             sample_numbers = np.random.choice(data_size, batch_size, replace = False)
             for i in range(batch_size):
                 x = self.data[0][sample_numbers[i]]
@@ -120,7 +128,15 @@ class Neural_Network:
             accuracy.append((total_correct_predictions)/batch_size)
             # if j%300 == 0: 
             #     print("Mean squared error = {} \n Accuracy = {}".format(total_sse/batch_size, (total_correct_predictions*100)/batch_size))
-            Neural_Network.gradient_descent(self, total_change_bias, total_change_weights, batch_size, reg_const)
+            d_weights_old = total_change_weights
+            if(j==0):
+                Neural_Network.gradient_descent(self, total_change_bias, total_change_weights, 0, 0, batch_size, reg_const, rho)
+            if(j>0):
+                Neural_Network.gradient_descent(self, total_change_bias, total_change_weights, d_bias_old, d_weights_old, batch_size, reg_const, rho)
+            d_weights_old = total_change_weights
+            d_bias_old = total_change_bias
+            print(total_change_weights)
+
         return loss, accuracy
 
     def classify(self, x, y):
@@ -249,7 +265,7 @@ def main():
     input_size = [2]
     output_size = [1]
     hidden_layers = [6]
-    Iteration_Epochs = 200
+    Iteration_Epochs = 20
 
     ##10fold krossvalidation###
     loss = np.zeros(Iteration_Epochs)
@@ -257,7 +273,7 @@ def main():
     kerasloss = np.zeros(Iteration_Epochs)
     kerasaccuracy = np.zeros(Iteration_Epochs)
 
-    runs = 10
+    runs = 1
     overall_NN_test_acc = []
     overall_keras_test_acc = []
     overall_NN_time = []
@@ -270,7 +286,7 @@ def main():
 
         start_time = time.time()
         NN = Neural_Network(data_train, input_size, output_size, hidden_layers)
-        loss2, accuracy2 = NN.train_network(Batch_Size, Iteration_Epochs)
+        loss2, accuracy2 = NN.train_network(Batch_Size, Iteration_Epochs, 0.2)
         NNtime = time.time() - start_time
         start_time = time.time()
         history, model = keras_learning(data_train, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs, optimizer = SGD(learning_rate=0.8, momentum=0))
