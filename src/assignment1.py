@@ -68,16 +68,16 @@ class Neural_Network:
         #print("\nlayer error = {}\n, weight change = {} \n bias change = {} \n".format(layer_error, change_Weights, change_Bias))
         return change_Bias, change_Weights 
 
-    def gradient_descent(self, total_change_bias, total_change_weights, d_bias_old, d_weights_old, batch_size, reg_const, rho):
+    def gradient_descent(self, total_change_bias, total_change_weights, bias_old, weights_old, batch_size, reg_const, rho):
         
 
         for i in range(self.amount_layers - 1):
-            if d_weights_old == 0:
+            if weights_old == 0:
                 self.Weights[i] = self.Weights[i] - (reg_const/batch_size) * total_change_weights[i]                
                 self.Bias[i] = self.Bias[i] - (reg_const/batch_size) * total_change_bias[i]
             else:
-                self.Weights[i] = self.Weights[i] - (reg_const/batch_size) * total_change_weights[i] + rho * (total_change_weights[i] - d_weights_old[i])
-                self.Bias[i] = self.Bias[i] - (reg_const/batch_size) * total_change_bias[i] + rho * (total_change_bias[i] - d_bias_old[i])
+                self.Weights[i] = self.Weights[i] - (reg_const/batch_size) * total_change_weights[i] + rho * (self.Weights[i] - weights_old[i])
+                self.Bias[i] = self.Bias[i] - (reg_const/batch_size) * total_change_bias[i] + rho * (total_change_bias[i] - bias_old[i])
 
 
     def test_network(self, data):
@@ -128,14 +128,16 @@ class Neural_Network:
             accuracy.append((total_correct_predictions)/batch_size)
             # if j%300 == 0: 
             #     print("Mean squared error = {} \n Accuracy = {}".format(total_sse/batch_size, (total_correct_predictions*100)/batch_size))
-            d_weights_old = total_change_weights
+
+            #Save current weights
+            weights_old_queue = self.Weights
+            bias_old_queue = self.Bias
             if(j==0):
                 Neural_Network.gradient_descent(self, total_change_bias, total_change_weights, 0, 0, batch_size, reg_const, rho)
-            if(j>0):
-                Neural_Network.gradient_descent(self, total_change_bias, total_change_weights, d_bias_old, d_weights_old, batch_size, reg_const, rho)
-            d_weights_old = total_change_weights
-            d_bias_old = total_change_bias
-            print(total_change_weights)
+            else:
+                Neural_Network.gradient_descent(self, total_change_bias, total_change_weights, bias_old, weights_old, batch_size, reg_const, rho)
+            weights_old = weights_old_queue
+            bias_old = bias_old_queue
 
         return loss, accuracy
 
