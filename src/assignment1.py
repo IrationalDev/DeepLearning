@@ -279,14 +279,15 @@ def main():
 
     ###Data and variables
     data = load_data()
+    make_graphs(data[0], data[1])
 
     ###Adapt the layers to change the shape of the neural network###
     input_size = [2]
     output_size = [1]
     hidden_layers = [6, 6]
-    Iteration_Epochs = 100
+    Iteration_Epochs = 3000
 
-    ##10 times model run with crossvalidation###
+    #10 times model run with crossvalidation###
     loss = np.zeros(Iteration_Epochs)
     accuracy = np.zeros(Iteration_Epochs)
     kerasloss = np.zeros(Iteration_Epochs)
@@ -307,10 +308,11 @@ def main():
         NN = Neural_Network(data_train, input_size, output_size, hidden_layers)
         loss2, accuracy2 = NN.train_network(Batch_Size, Iteration_Epochs, 0.2)
         NNtime = time.time() - start_time
+
         start_time = time.time()
         history, model = keras_learning(data_train, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs, optimizer = SGD(learning_rate=0.8, momentum=0.2))
-        
         kerastime = time.time() - start_time
+
         kerasloss2 = history.history['loss']
         kerasaccuracy2 = history.history['accuracy']
         loss = [a + b for a, b in zip(loss, loss2)]
@@ -319,9 +321,9 @@ def main():
         kerasaccuracy = [a + b for a, b in zip(kerasaccuracy, kerasaccuracy2)]
 
         testhistory = model.evaluate(data_test[0], data_test[1], verbose = 0)
-        overall_NN_test_acc.append(testhistory[1])
+        overall_keras_test_acc.append(testhistory[1])
         testaccuracy = NN.classify(data_test[0], data_test[1])
-        overall_keras_test_acc.append(testaccuracy)
+        overall_NN_test_acc.append(testaccuracy)
 
         overall_NN_time.append(NNtime)
         overall_keras_time.append(kerastime)
@@ -357,7 +359,6 @@ def main():
     #         print(hidden_layers, optimizer.learning_rate, testhistory)
 
 
-    make_graphs(data[0], data[1])
     
     
 
