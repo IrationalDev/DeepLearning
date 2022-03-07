@@ -311,30 +311,30 @@ def main():
     print("kerastime", np.std(overall_keras_time), np.mean(overall_keras_time))
     print("NNtime", np.std(overall_NN_time), np.mean(overall_NN_time))
     
-    loss = [a / runs for a in loss]
-    accuracy = [a / runs for a in accuracy]
-    kerasloss = [a / runs for a in kerasloss]
-    kerasaccuracy = [a / runs for a in kerasaccuracy]
+    # loss = [a / runs for a in loss]
+    # accuracy = [a / runs for a in accuracy]
+    # kerasloss = [a / runs for a in kerasloss]
+    # kerasaccuracy = [a / runs for a in kerasaccuracy]
 
-    plot_data(loss, accuracy, kerasloss, kerasaccuracy)
+    # plot_data(loss, accuracy, kerasloss, kerasaccuracy)
 
 
 
     ##Gridsearch###
-    # data_train, data_test = split_data(data, 0.8)
-    # Batch_Size = len(data_train[0])
+    data_train, data_test = split_data(data, 0.8)
+    Batch_Size = len(data_train[0])
 
-    # input_size = [2]
-    # output_size = [1]
-    # Iteration_Epochs = 3000
-    # hidden_layerss = [[4],[6],[10],[4,4],[6,6]]
-    # SGDs = [SGD(learning_rate=0.3, momentum=0), SGD(learning_rate=0.5, momentum=0), SGD(learning_rate=0.8, momentum=0)]
-    # for hidden_layers in hidden_layerss:
-    #     for optimizer in SGDs:
-    #         history, model = keras_learning(data_train, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs, optimizer = optimizer)
-    #         testhistory = model.evaluate(data_test[0], data_test[1], verbose = 0)
-    #         print("\n")
-    #         print(hidden_layers, optimizer.learning_rate, testhistory)
+    input_size = [2]
+    output_size = [1]
+    Iteration_Epochs = 3000
+
+    hidden_layerss = [[6],[10],[4,4],[6,6], [3,3,3]]
+    SGDs = [SGD(learning_rate=0.8, momentum=0), SGD(learning_rate=0.9, momentum=0), SGD(learning_rate=1, momentum=0), SGD(learning_rate=2, momentum=0)]
+    for hidden_layers in hidden_layerss:
+        for optimizer in SGDs:
+            history, model = keras_learning(data_train, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs, optimizer = optimizer)
+            testhistory = model.evaluate(data_test[0], data_test[1], verbose = 0)
+            print(hidden_layers, optimizer.learning_rate, testhistory)
 
 
     
