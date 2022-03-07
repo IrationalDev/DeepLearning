@@ -28,7 +28,7 @@ class Neural_Network:
         #initialize Weights
         self.Weights = []
         for i in range (len(self.layers)-1):
-            self.Weights.append((np.random.random(self.layers[i+1])*2)-1)
+            self.Weights.append((np.random.random((self.layers[i], self.layers[i+1]))*2)-1)
         # print('weight array',self.Weights)
         # print(self.Weights[1])
         # print('bias array', self.Bias)
@@ -213,10 +213,10 @@ def sigmoidderivative(vector):
 def keras_learning(data, input_size, output_size, hidden_layers, Batch_Size, Epochs, optimizer):
     optimizer = SGD(learning_rate=0.8, momentum=0)
     model = Sequential()
-    model.add(Dense(input_size[0], activation='sigmoid', kernel_initializer=tf.keras.initializers.Constant(0.5)))
+    model.add(Dense(input_size[0], activation='sigmoid', kernel_initializer=tf.keras.initializers.RandomUniform(minval=-1.00, maxval=1.00, seed = None)))
     for i in range(len(hidden_layers)):
-        model.add(Dense(hidden_layers[i], activation='sigmoid', kernel_initializer=tf.keras.initializers.Constant(0.5)))
-    model.add(Dense(output_size[0], activation='sigmoid', kernel_initializer=tf.keras.initializers.Constant(0.5)))
+        model.add(Dense(hidden_layers[i], activation='sigmoid', kernel_initializer = tf.keras.initializers.RandomUniform(minval=-1.00, maxval=1.00, seed = None)))
+    model.add(Dense(output_size[0], activation='sigmoid', kernel_initializer = tf.keras.initializers.RandomUniform(minval=-1.00, maxval=1.00, seed = None)))
 
     model.compile(loss='mse', optimizer=optimizer, metrics=['accuracy'])
 
@@ -249,7 +249,7 @@ def main():
     input_size = [2]
     output_size = [1]
     hidden_layers = [6]
-    Iteration_Epochs = 3000
+    Iteration_Epochs = 200
 
     ##10fold krossvalidation###
     loss = np.zeros(Iteration_Epochs)
