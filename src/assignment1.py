@@ -76,8 +76,8 @@ class Neural_Network:
                 self.Weights[i] = self.Weights[i] - (reg_const/batch_size) * total_change_weights[i]                
                 self.Bias[i] = self.Bias[i] - (reg_const/batch_size) * total_change_bias[i]
             else:
-                self.Weights[i] = self.Weights[i] - (reg_const/batch_size) * total_change_weights[i] + rho * (self.Weights[i] - weights_old[i])
-                self.Bias[i] = self.Bias[i] - (reg_const/batch_size) * total_change_bias[i] + rho * (total_change_bias[i] - bias_old[i])
+                self.Weights[i] = self.Weights[i] - ((reg_const/batch_size) * total_change_weights[i] + rho * weights_old[i])
+                self.Bias[i] = self.Bias[i] - ((reg_const/batch_size) * total_change_bias[i] + rho * bias_old[i])
 
 
     def test_network(self, data):
@@ -130,14 +130,14 @@ class Neural_Network:
             #     print("Mean squared error = {} \n Accuracy = {}".format(total_sse/batch_size, (total_correct_predictions*100)/batch_size))
 
             #Save current weights
-            weights_old_queue = self.Weights
-            bias_old_queue = self.Bias
+            #weights_old_queue = self.Weights
+            #bias_old_queue = self.Bias
             if(j==0):
                 Neural_Network.gradient_descent(self, total_change_bias, total_change_weights, 0, 0, batch_size, reg_const, rho)
             else:
                 Neural_Network.gradient_descent(self, total_change_bias, total_change_weights, bias_old, weights_old, batch_size, reg_const, rho)
-            weights_old = weights_old_queue
-            bias_old = bias_old_queue
+            weights_old = total_change_weights
+            bias_old = total_change_bias
 
         return loss, accuracy
 
