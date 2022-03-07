@@ -70,14 +70,13 @@ class Neural_Network:
 
     def gradient_descent(self, total_change_bias, total_change_weights, bias_old, weights_old, batch_size, reg_const, rho):
         
-
         for i in range(self.amount_layers - 1):
             if weights_old == 0:
                 self.Weights[i] = self.Weights[i] - (reg_const/batch_size) * total_change_weights[i]                
                 self.Bias[i] = self.Bias[i] - (reg_const/batch_size) * total_change_bias[i]
             else:
-                self.Weights[i] = self.Weights[i] - ((reg_const/batch_size) * total_change_weights[i] + rho * weights_old[i])
-                self.Bias[i] = self.Bias[i] - ((reg_const/batch_size) * total_change_bias[i] + rho * bias_old[i])
+                self.Weights[i] = self.Weights[i] - (reg_const/batch_size) * total_change_weights[i] - rho * ((reg_const/batch_size) *weights_old[i])
+                self.Bias[i] = self.Bias[i] - (reg_const/batch_size) * total_change_bias[i] - rho * ((reg_const/batch_size) *bias_old[i]) 
 
 
     def test_network(self, data):
@@ -247,12 +246,11 @@ def sigmoidderivative(vector):
 
 
 def keras_learning(data, input_size, output_size, hidden_layers, Batch_Size, Epochs, optimizer):
-    optimizer = SGD(learning_rate=0.8, momentum=0)
     model = Sequential()
-    model.add(Dense(input_size[0], activation='sigmoid', kernel_initializer=tf.keras.initializers.RandomUniform(minval=-1.00, maxval=1.00, seed = None)))
+    model.add(Dense(input_size[0], activation='sigmoid', kernel_initializer=tf.keras.initializers.RandomUniform(minval=-1.00, maxval=1.00)))
     for i in range(len(hidden_layers)):
-        model.add(Dense(hidden_layers[i], activation='sigmoid', kernel_initializer = tf.keras.initializers.RandomUniform(minval=-1.00, maxval=1.00, seed = None)))
-    model.add(Dense(output_size[0], activation='sigmoid', kernel_initializer = tf.keras.initializers.RandomUniform(minval=-1.00, maxval=1.00, seed = None)))
+        model.add(Dense(hidden_layers[i], activation='sigmoid', kernel_initializer=tf.keras.initializers.RandomUniform(minval=-1.00, maxval=1.00)))
+    model.add(Dense(output_size[0], activation='sigmoid', kernel_initializer=tf.keras.initializers.RandomUniform(minval=-1.00, maxval=1.00)))
 
     model.compile(loss='mse', optimizer=optimizer, metrics=['accuracy'])
 
@@ -274,9 +272,6 @@ def split_data(data, factor):
 
 
 def main():
-    #Call functions here
-    #random.seed(8)
-
     ###Data and variables
     data = load_data()
     make_graphs(data[0], data[1])
@@ -284,7 +279,7 @@ def main():
     ###Adapt the layers to change the shape of the neural network###
     input_size = [2]
     output_size = [1]
-    hidden_layers = [6, 6]
+    hidden_layers = [10]
     Iteration_Epochs = 3000
 
     #10 times model run with crossvalidation###
@@ -293,7 +288,7 @@ def main():
     kerasloss = np.zeros(Iteration_Epochs)
     kerasaccuracy = np.zeros(Iteration_Epochs)
 
-    runs = 3
+    runs = 10
     overall_NN_test_acc = []
     overall_keras_test_acc = []
     overall_NN_time = []
@@ -343,20 +338,22 @@ def main():
 
 
     ##Gridsearch###
-    # data_train, data_test = split_data(data, 0.8)
-    # Batch_Size = len(data_train[0])
+    data_train, data_test = split_data(data, 0.8)
+    Batch_Size = len(data_train[0])
 
-    # input_size = [2]
-    # output_size = [1]
-    # Iteration_Epochs = 3000
+    input_size = [2]
+    output_size = [1]
+    Iteration_Epochs = 3000
 
-    # hidden_layerss = [[6],[10],[4,4],[6,6], [3,3,3]]
-    # SGDs = [SGD(learning_rate=0.8, momentum=0.2), SGD(learning_rate=0.9, momentum=0.2), SGD(learning_rate=1, momentum=0.2), SGD(learning_rate=2, momentum=0.2)]
-    # for hidden_layers in hidden_layerss:
-    #     for optimizer in SGDs:
-    #         history, model = keras_learning(data_train, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs, optimizer = optimizer)
-    #         testhistory = model.evaluate(data_test[0], data_test[1], verbose = 0)
-    #         print(hidden_layers, optimizer.learning_rate, testhistory)
+    hidden_layerss = [[6],[10],[4,4],[6,6], [3,3,3]]
+    SGDs = [SGD(learning_rate=0.8, momentum=0.2), SGD(learning_rate=0.9, momentum=0.2), SGD(learning_rate=1, momentum=0.2), SGD(learning_rate=2, momentum=0.2)]
+    for hidden_layers in hidden_layerss:
+        for optimizer in SGDs:
+            history, model = keras_learning(data_train, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs, optimizer = optimizer)
+            testhistory = model.evaluate(data_test[0], data_test[1], verbose = 0)
+            print(hidden_layers, optimizer.learning_rate, testhistory)
+
+    
 
 
     
