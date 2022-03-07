@@ -285,7 +285,7 @@ def main():
     input_size = [2]
     output_size = [1]
     hidden_layers = [6, 6]
-    Iteration_Epochs = 20
+    Iteration_Epochs = 2000
 
     ##10 times model run with crossvalidation###
     loss = np.zeros(Iteration_Epochs)
@@ -293,7 +293,7 @@ def main():
     kerasloss = np.zeros(Iteration_Epochs)
     kerasaccuracy = np.zeros(Iteration_Epochs)
 
-    runs = 1
+    runs = 10
     overall_NN_test_acc = []
     overall_keras_test_acc = []
     overall_NN_time = []
@@ -309,7 +309,7 @@ def main():
         loss2, accuracy2 = NN.train_network(Batch_Size, Iteration_Epochs, 0.2)
         NNtime = time.time() - start_time
         start_time = time.time()
-        history, model = keras_learning(data_train, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs, optimizer = SGD(learning_rate=0.8, momentum=0))
+        history, model = keras_learning(data_train, input_size, output_size, hidden_layers, Batch_Size, Iteration_Epochs, optimizer = SGD(learning_rate=0.8, momentum=0.2))
         kerastime = time.time() - start_time
         kerasloss2 = history.history['loss']
         kerasaccuracy2 = history.history['accuracy']
